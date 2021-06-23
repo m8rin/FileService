@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Cities</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+<h2>Список шаблонов</h2>
+
+<table>
+  <tr>
+    <th>Id</th>
+    <th>Название</th>
+  </tr>
+
+  <tr th:each="template : ${templates}">
+    <td th:text="${template.id}">Id</td>
+    <td th:text="${template.filename}">Название</td>
+  </tr>
+</table>
+
+</body>
+</html>
