@@ -7,20 +7,25 @@ import java.util.List;
 
 public class WordEditing {
 
-    public static void paragraphsSearch(XWPFDocument docxFile, ArrayList<String> variableList, ArrayList<String> list) {
+    public static void paragraphsSearch(XWPFDocument docxFile, ArrayList<String> variableList, ArrayList<String> list, String purpose) {
         List<XWPFParagraph> paragraphs = docxFile.getParagraphs();
         for (XWPFParagraph p : paragraphs) {
             List<XWPFRun> runs = p.getRuns();
             if (runs != null) {
                 for (XWPFRun r : runs) {
                     String text = r.getText(0);
-                    replaceText(variableList, list, r, text);
+
+                    if(purpose.equals("replace")){
+                        replaceText(variableList, list, r, text);
+                    }else if(purpose.equals("fill")){
+                        fillingVariableList(variableList, text);
+                    }
                 }
             }
         }
     }
 
-    public static void tableSearch(XWPFDocument docxFile, ArrayList<String> variableList, ArrayList<String> list) {
+    public static void tableSearch(XWPFDocument docxFile, ArrayList<String> variableList, ArrayList<String> list, String purpose) {
         for (XWPFTable tbl : docxFile.getTables()) {
             for (XWPFTableRow row : tbl.getRows()) {
                 for (XWPFTableCell cell : row.getTableCells()) {
@@ -30,8 +35,11 @@ public class WordEditing {
                             String text = r.getText(0);
                             //System.out.println(text);
 
-                            //замена текста найденной перменной
-                            replaceText(variableList, list, r, text);
+                            if(purpose.equals("replace")){
+                                replaceText(variableList, list, r, text);
+                            }else if(purpose.equals("fill")){
+                                fillingVariableList(variableList, text);
+                            }
                         }
                     }
                 }
@@ -49,18 +57,15 @@ public class WordEditing {
         }
     }
 
-    public static void fillingVariableList(ArrayList<String> list) {
-        list.add("{organization}");
-        list.add("{address}");
-        list.add("{phone number}");
-        list.add("{fax}");
-        list.add("{document number}");
-        list.add("{date}");
-        list.add("{number}");
-        list.add("{name}");
-        list.add("{customer}");
-        list.add("{delivery address}");
-        list.add("{customer phone number}");
+    public static void fillingVariableList(ArrayList<String> list, String text) {
+        if (text != null) {
+            char str_char = text.charAt(0);
+            char variable_symbol = '{';
+            if(str_char == variable_symbol){
+                list.add(text);
+                //System.out.println(text);
+            }
+        }
     }
 
     public static void fillingList(ArrayList<String> list) {

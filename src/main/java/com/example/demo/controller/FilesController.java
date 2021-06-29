@@ -134,19 +134,19 @@ public class FilesController {
                 XWPFDocument document = new XWPFDocument(opcPackage);
 
                 ArrayList<String> variableList = new ArrayList<>();
+                ArrayList<String> list = new ArrayList<>();
 
                 //заполнение списка переменных
-                WordEditing.fillingVariableList(variableList);
+                WordEditing.tableSearch(document, variableList, list, "fill");
+                WordEditing.paragraphsSearch(document, variableList, list, "fill");
 
-                ArrayList<String> list = new ArrayList<>();
                 //заполнение списка значений, на которые нужно поменять переменные
                 WordEditing.fillingList(list);
 
                 //поиск переменных в таблицах и замена
-                WordEditing.tableSearch(document, variableList, list);
-
+                WordEditing.tableSearch(document, variableList, list, "replace");
                 //поиск переменных в абзацах и замена
-                WordEditing.paragraphsSearch(document, variableList, list);
+                WordEditing.paragraphsSearch(document, variableList, list, "replace");
 
                 List<XWPFParagraph> paras = document.getParagraphs();
                 int i = 1;
