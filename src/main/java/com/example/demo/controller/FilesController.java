@@ -32,24 +32,15 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RestController
+@Controller
 public class FilesController {
 
     @GetMapping("/showTemplates")
     public String findTemplates(Model model) {
 
-        var files = (List<FileResponse>) fileService.getFile("1")
-                .stream()
-                .map(this::mapToFileResponse)
-                .collect(Collectors.toList());
+        var templates = (List<FileEntity>) fileService.getAllFiles();
 
-
-        List<String> fileNames = new ArrayList<>();
-        for (FileResponse file : files) {
-            fileNames.add(file.getName());
-        }
-
-        model.addAttribute("files", fileNames);
+        model.addAttribute("files", templates);
 
         return "showTemplates";
     }
@@ -77,6 +68,7 @@ public class FilesController {
         }
     }
 
+    @ResponseBody
     @RequestMapping(value = "/files", method = RequestMethod.GET)
     public List<FileResponse> list() {
 
@@ -102,6 +94,7 @@ public class FilesController {
         return fileResponse;
     }
 
+    @ResponseBody
     @RequestMapping(value = "/files/{id}", method = RequestMethod.GET)
     public ResponseEntity<byte[]> getFile(@PathVariable String id) {
         Optional<FileEntity> fileEntityOptional = fileService.getFile(id);
