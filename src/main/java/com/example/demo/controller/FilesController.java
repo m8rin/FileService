@@ -2,18 +2,21 @@ package com.example.demo.controller;
 
 import com.example.demo.model.FileEntity;
 import com.example.demo.model.FileResponse;
+import com.example.demo.model.Variable;
+import com.example.demo.poi.word.WordEditing;
 import com.example.demo.service.FileService;
-import com.example.demo.word.WordEditing;
+import com.example.demo.service.interfaces.IVariableService;
 import org.apache.poi.ooxml.POIXMLDocument;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
@@ -53,9 +56,12 @@ public class FilesController {
 
     private final FileService fileService;
 
+    private final IVariableService iVariableService;
+
     @Autowired
-    public FilesController(FileService fileService) {
+    public FilesController(FileService fileService, @Qualifier("IVariableService") IVariableService iVariableService) {
         this.fileService = fileService;
+        this.iVariableService = iVariableService;
     }
 
     @RequestMapping(value = "/files", method = RequestMethod.POST)
@@ -112,8 +118,10 @@ public class FilesController {
                 .body(fileEntity.getData());
     }
 
-    @RequestMapping(value = "upload", method = RequestMethod.POST)
-    public Map<String, String> uploadFile(@RequestParam(value = "file") MultipartFile file) {
+    // получение переменных из шаблона
+    @ResponseBody
+    @RequestMapping(value = "/getVariable", method = RequestMethod.POST)
+    public Map<String, String> getVariable(@RequestParam("file") MultipartFile file) {
         String textFileName = file.getOriginalFilename();
 
         // Создаем объект мапа для хранения содержимого
@@ -140,22 +148,86 @@ public class FilesController {
                 WordEditing.tableSearch(document, variableList, list, "fill");
                 WordEditing.paragraphsSearch(document, variableList, list, "fill");
 
-                //заполнение списка значений, на которые нужно поменять переменные
-                WordEditing.fillingList(list);
+                //сохранение переменных и определение их типа
+                VariableController variableController = new VariableController(iVariableService);
 
-                //поиск переменных в таблицах и замена
-                WordEditing.tableSearch(document, variableList, list, "replace");
-                //поиск переменных в абзацах и замена
-                WordEditing.paragraphsSearch(document, variableList, list, "replace");
+                char variable_symbol = '{';
+                for (int i = 0; i < variableList.size(); i++) {
+                    Variable variable = new Variable();
+                    variable.setName(variableList.get(i));
+                    wordMap.put("(" + i + ")", variableList.get(i));
 
-                List<XWPFParagraph> paras = document.getParagraphs();
-                int i = 1;
-                for (XWPFParagraph paragraph : paras) {
-                    String words = paragraph.getText();
-                    //System.out.println(words);
-                    wordMap.put("(" + i + ")", words);
+                    if (variableList.get(i).length() > 1) {
+                        char str_char = variableList.get(i).charAt(0);
+                        char str_char1 = variableList.get(i).charAt(1);
+
+                        if (str_char == variable_symbol && str_char1 != '(') {
+                            variable.setType("string");
+                        } else if (str_char1 == '(') {
+                            char str_char2 = variableList.get(i).charAt(2);
+                            if (str_char2 == 'i') {
+                                variable.setType("int");
+                            }
+                            if (str_char2 == 'd') {
+                                variable.setType("date");
+                            }
+                        }
+                    }
+
+                    variableController.create(variable);
+                }
+                fileService.save(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("\n" + wordMap);
+        return wordMap;
+    }
+
+    //замена переменных в шаблоне и сохранение файла
+    @ResponseBody
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public Map<String, String> uploadFile(@RequestParam("variable") ArrayList<String> variables, @RequestParam("id") String id) {
+
+        Optional<FileEntity> optionalFileEntity = fileService.getFile(id);
+        FileEntity fileEntity = optionalFileEntity.get();
+
+        // Создаем объект мапа для хранения содержимого
+        Map<String, String> wordMap = new LinkedHashMap<>();
+        //String textFileName = file.getOriginalFilename();
+        String textFileName = fileEntity.getName();
+        try {
+            assert textFileName != null;
+            if (textFileName.endsWith(".docx")) {
+
+                // Создаем временный файл
+                String tempFile = "tempFile1.docx";
+                File uFile = new File(tempFile);
+
+                // Копируем содержимое файла
+                //FileCopyUtils.copy(file.getBytes(), uFile);
+                FileCopyUtils.copy(fileEntity.getData(), uFile);
+
+                OPCPackage opcPackage = POIXMLDocument.openPackage(tempFile);
+                // Использование класса XWPFDocument компонента XWPF для получения содержимого документа
+                XWPFDocument document = new XWPFDocument(opcPackage);
+
+                ArrayList<String> variableList = new ArrayList<>();
+
+                //заполнение списка переменных
+                WordEditing.tableSearch(document, variableList, variables, "fill");
+                WordEditing.paragraphsSearch(document, variableList, variables, "fill");
+
+                for (int i = 0; i < variableList.size(); i++) {
+                    wordMap.put(variableList.get(i), variables.get(i));
                     i++;
                 }
+
+                //поиск переменных в таблицах и замена
+                WordEditing.tableSearch(document, variableList, variables, "replace");
+                //поиск переменных в абзацах и замена
+                WordEditing.paragraphsSearch(document, variableList, variables, "replace");
 
                 //записываем в новый файл
                 String outputFileName = "Output.docx";
@@ -172,13 +244,12 @@ public class FilesController {
                     byte[] content = null;
                     try {
                         content = Files.readAllBytes(path);
+                        MultipartFile result = new MockMultipartFile(name,
+                                outputFileName, contentType, content);
+
+                        fileService.save(result);
                     } catch (final IOException ignored) {
                     }
-                    MultipartFile result = new MockMultipartFile(name,
-                            outputFileName, contentType, content);
-
-                    fileService.save(result);
-
                 } catch (IOException ignored) {
                 } finally {
                     if (fileOutputStream != null) {
