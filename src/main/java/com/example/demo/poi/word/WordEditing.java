@@ -1,4 +1,4 @@
-package com.example.demo.word;
+package com.example.demo.poi.word;
 
 import org.apache.poi.xwpf.usermodel.*;
 
@@ -68,17 +68,4 @@ public class WordEditing {
         }
     }
 
-    public static void fillingList(ArrayList<String> list) {
-        list.add("ООО 'Круто1'");
-        list.add("г. Уфа, ул. Кольцевая, 71");
-        list.add("89666665521");
-        list.add("778991");
-        list.add("220011");
-        list.add("15.06.2021");
-        list.add("12341");
-        list.add("Такой-то1");
-        list.add("Иванов Иван Иванович1");
-        list.add("г. Уфа, ул. Кольцевая, 72");
-        list.add("+7 967 74 77 777");
-    }
 }
