@@ -21,10 +21,10 @@ public class VariableController {
         this.IVariableService = IVariableService;
     }
 
-    @RequestMapping("/list")
+    @RequestMapping("/fillingVariables")
     public String variableList(Model model) {
         model.addAttribute("variables", IVariableService.readAll());
-        return "list";
+        return "fillingVariables";
     }
 
     @GetMapping(value = "/variable")
