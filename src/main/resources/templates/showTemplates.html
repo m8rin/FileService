@@ -1,25 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://thymeleaf.org" lang="en">
 <head>
-  <title>Cities</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Templates</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
 <h2>Список шаблонов</h2>
 
-<table>
-  <tr>
-    <th>Id</th>
-    <th>Название</th>
-  </tr>
+<form method="POST" enctype="multipart/form-data" action="/list">
+    <table border="1px" cellpadding="5px">
+        <tr>
+            <th>Id</th>
+            <th>Название</th>
+            <th>Ссылка</th>
 
-  <tr th:each="template : ${templates}">
-    <td th:text="${template.id}">Id</td>
-    <td th:text="${template.filename}">Название</td>
-  </tr>
-</table>
+        </tr>
+
+        <tr th:each="file : ${files}">
+            <td th:text="${file.id}">Id</td>
+            <td th:text="${file.name}">Название</td>
+            <td><input type="submit" value="Заполнить"></td>
+        </tr>
+    </table>
+</form>
 
 </body>
 </html>

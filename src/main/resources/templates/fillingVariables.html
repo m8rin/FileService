@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div th:if="${not #lists.isEmpty(variables)}">
+
+    <form method="POST" enctype="multipart/form-data" action="/upload">
+        <table border="1px" cellpadding="5px">
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Value</th>
+            </tr>
+
+            <tr th:each="variable : ${variables}">
+                <td th:text="${variable.id}"></td>
+                <td th:text="${variable.name}"></td>
+                <td th:text="${variable.type}"></td>
+                <td><label>
+                    <input type="text" name="variable">
+                </label></td>
+            </tr>
+        </table>
+
+        <br> Id шаблона: <label>
+        <input type="text" name="id" size="50px">
+    </label>
+        <br/><input type="submit" value="Создать файл">
+    </form>
+
+</div>
+</body>
+</html>
