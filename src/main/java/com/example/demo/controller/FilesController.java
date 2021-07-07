@@ -179,15 +179,13 @@ public class FilesController {
     }
 
     //замена переменных в шаблоне и сохранение файла
-    @ResponseBody
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public Map<String, String> uploadFile(@RequestParam("variable") ArrayList<String> variables, @RequestParam("id") String id) {
+    public String uploadFile(@RequestParam("variable") ArrayList<String> variables, @RequestParam("id") String id, Model model) {
 
+        FileEntity receivedFile = new FileEntity();
         Optional<FileEntity> optionalFileEntity = fileService.getFile(id);
         FileEntity fileEntity = optionalFileEntity.get();
 
-        // Создаем объект мапа для хранения содержимого
-        Map<String, String> wordMap = new LinkedHashMap<>();
         //String textFileName = file.getOriginalFilename();
         String textFileName = fileEntity.getName();
         try {
@@ -211,11 +209,6 @@ public class FilesController {
                 //заполнение списка переменных
                 WordEditing.tableSearch(document, variableList, variables, "fill");
                 WordEditing.paragraphsSearch(document, variableList, variables, "fill");
-
-                for (int i = 0; i < variableList.size(); i++) {
-                    wordMap.put(variableList.get(i), variables.get(i));
-                    i++;
-                }
 
                 //поиск переменных в таблицах и замена
                 WordEditing.tableSearch(document, variableList, variables, "replace");
@@ -241,6 +234,10 @@ public class FilesController {
                                 outputFileName, contentType, content);
 
                         fileService.save(result);
+                        
+                        //получаем данные созданного файла для получения ссылки для скачивания
+                        receivedFile = fileService.getLast();
+
                     } catch (final IOException ignored) {
                     }
                 } catch (IOException ignored) {
@@ -265,7 +262,7 @@ public class FilesController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(wordMap);
-        return wordMap;
+        model.addAttribute("downloadFiles", mapToFileResponse(receivedFile));
+        return "upload";
     }
 }

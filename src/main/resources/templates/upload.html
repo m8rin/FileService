@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://thymeleaf.org" lang="en">
+<head>
+    <title>Templates</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+<form method="POST" enctype="multipart/form-data" action="/upload">
+    <table border="1px" cellpadding="5px">
+        <tr>
+            <th>Id</th>
+            <th>Название</th>
+            <th>Тип</th>
+            <th>Размер</th>
+            <th>Ссылка</th>
+        </tr>
+
+        <tr th:each="file : ${downloadFiles}">
+            <td th:text="${file.id}"></td>
+            <td th:text="${file.name}"></td>
+            <td th:text="${file.contentType}"></td>
+            <td th:text="${file.size}"></td>
+            <td><a th:href="${file.url}">Скачать</a></td>
+        </tr>
+    </table>
+</form>
+
+</body>
+</html>
