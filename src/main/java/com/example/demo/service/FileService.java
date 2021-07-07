@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -24,7 +25,7 @@ public class FileService {
 
     public void save(MultipartFile file) throws IOException {
         FileEntity fileEntity = new FileEntity();
-        fileEntity.setName(StringUtils.cleanPath(file.getOriginalFilename()));
+        fileEntity.setName(StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename())));
         fileEntity.setContentType(file.getContentType());
         fileEntity.setData(file.getBytes());
         fileEntity.setSize(file.getSize());

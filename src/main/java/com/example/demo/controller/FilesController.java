@@ -227,7 +227,7 @@ public class FilesController {
                     Path path = Paths.get(outputFileName);
                     String name = "file.docx";
                     String contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                    byte[] content = null;
+                    byte[] content;
                     try {
                         content = Files.readAllBytes(path);
                         MultipartFile result = new MockMultipartFile(name,
